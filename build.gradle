@@ -15,7 +15,7 @@ android {
     buildToolsVersion "34.0.1"
 
     defaultConfig {
-      minSdkVersion 9
+      minSdkVersion 16
       targetSdkVersion 34
     }
 
@@ -35,8 +35,10 @@ android {
        'APP_BUILD_SCRIPT=${PWD}/native/crypto/Android.mk'
     }
 
-    tasks.withType(JavaCompile) {
-      compileTask -> compileTask.dependsOn ndkBuildRelease
+    tasks.whenTaskAdded { task ->
+        if (task.name == 'preBuild') {
+            task.dependsOn ndkBuildRelease
+        }
     }
 
     lintOptions {
@@ -44,68 +46,5 @@ android {
     }
 }
 
-// Configure gradle.properties to do maven builds
-if (!project.hasProperty('sonatypeRepo') ||
-    !project.hasProperty('sonatypeUsername') ||
-    !project.hasProperty('sonatypePassword')) {
-  return;
-}
-
-// Maven Push
-
-apply plugin: 'maven'
-apply plugin: 'signing'
-
-version = "1.1.3"
+version = "1.1.3-4kb"
 group = "com.facebook.conceal"
-
-configurations {
-    archives {
-        extendsFrom configurations.default
-    }
-}
-
-signing {
-    required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
-    sign configurations.archives
-}
-
-uploadArchives {
-    configuration = configurations.archives
-    repositories.mavenDeployer {
-        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-        repository(url: sonatypeRepo) {
-            authentication(userName: sonatypeUsername, password: sonatypePassword)
-        }
-
-        pom.project {
-            name 'Conceal'
-            packaging 'aar'
-            description 'Conceal is an easy to use, performant crypto library for android.'
-            url 'http://facebook.github.io/conceal'
-
-            scm {
-                url 'scm:git@github.com:facebook/conceal.git'
-                connection 'scm:git@github.com:facebook/conceal.git'
-                developerConnection 'scm:git@github.com:facebook/conceal.git'
-            }
-
-            licenses {
-                license {
-                    name 'BSD 2-Clause License'
-                    url 'https://github.com/facebook/conceal/blob/master/LICENSE'
-                    distribution 'repo'
-                }
-            }
-
-            developers {
-                developer {
-                    id 'subodh'
-                    name 'Subodh Iyengar'
-                    email 'mani.subodh@gmail.com'
-                }
-            }
-        }
-    }
-}

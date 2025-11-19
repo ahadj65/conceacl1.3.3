@@ -1,0 +1,8 @@
+android_binary(
+  name = 'app',
+  manifest = 'AndroidManifest.xml',
+  keystore = '//keystores:debug',
+  deps = [
+    '//:conceal_android',
+  ],
+)

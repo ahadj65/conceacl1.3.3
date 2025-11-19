@@ -1,0 +1,3 @@
+# file: jitpack.yml
+jdk:
+  - openjdk11
